@@ -15,7 +15,6 @@ case class Invader(var bounds: Rect) {
   val id: String = UUID.randomUUID().toString
 }
 
-
 object NVaders extends JSApp {
   val bundle = scalatags.JsDom
 
@@ -51,7 +50,7 @@ object NVaders extends JSApp {
       }
     }
 
-    document.body.appendChild(div(id:="debug").render)
+    document.body.appendChild(div(id := "debug").render)
 
     new AnimationFrame {
       override def callback(time: Long): Unit = {
