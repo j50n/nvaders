@@ -81,8 +81,34 @@ object SvgDefinitions {
             "M7,3", R, D, L, "Z").mkString(" "))
         ),
 
-        rect(id := LargeInvId(0), x := 0, y := 0, width := 12, height := 10, style := "stroke:red;fill:green;"),
-        rect(id := LargeInvId(1), x := 0, y := 0, width := 12, height := 10, style := "stroke:red;fill:blue;"),
+        g(id := LargeInvId(0),
+          `class` := "invader",
+          path(d:= Seq(
+            "M3,3", R,R,D,L,L,"Z",
+            "M7,3", R,R,D,L,L,"Z",
+            "M5,5", R,R,D,L,L, "Z",
+            "M0,2",
+            R,U,"l3,0",U,"l4,0",D,"l3,0",D,R,"l0,3",
+            L,L,D,R,D,L,D,L,L,U,R,U,L,L,D,L,L,
+            U,L,L,D,R,D,L,L,U,L,U,R,U, L,L,
+            "Z"
+            ).mkString(" "))
+        ),
+
+        g(id := LargeInvId(1),
+          `class` := "invader",
+          path(d:= Seq(
+            "M3,3", R,R,D,L,L,"Z",
+            "M7,3", R,R,D,L,L,"Z",
+            "M5,5", R,R,D,L,L, "Z",
+            "M0,2",
+            R,U,"l3,0",U,"l4,0",D,"l3,0",D,R,"l0,3",
+            "l-3,0",D,R,D,R,R,D,L,L,U,L,L,U,
+            L,D,L,L,U,L,D,L,L,D,L,L,
+            U,R,R,U,R,U,"l-3,0",
+            "Z"
+          ).mkString(" "))
+        ),
 
         ellipse(id := UFOId(0), cx := 8, cy := 4, rx := 8, ry := 4, style := "stroke:red;fill:green;"),
         ellipse(id := UFOId(1), cx := 8, cy := 4, rx := 8, ry := 4, style := "stroke:red;fill:blue;"),

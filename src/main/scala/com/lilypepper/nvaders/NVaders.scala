@@ -56,7 +56,7 @@ object NVaders extends JSApp {
     }
 
     val element: org.scalajs.dom.svg.Use = use().render
-    element.setAttribute("href", s"#${CannonId}")
+    element.setAttribute("href", s"#$CannonId")
 
     document.getElementById(ScreenId).appendChild(element)
   }
@@ -82,7 +82,9 @@ object NVaders extends JSApp {
     //    import bundle.tags._
 
     document.body.appendChild(SvgDefinitions.definitions.render)
-    document.body.appendChild(doSvg().render)
+
+    val playArea = doSvg().render
+    document.body.appendChild(playArea)
 
     val cannon = Cannon(Point(20, 200))
     cannon.update()
@@ -224,11 +226,16 @@ object NVaders extends JSApp {
 
     new AnimationFrame {
       override def callback(time: Long): Unit = {
-        //if (time % 2 == 0) {
-        advancer.foreach(_.frame())
-        //}
+        playArea.pauseAnimations()
+        try {
+          //if (time % 2 == 0) {
+          advancer.foreach(_.frame())
+          //}
 
-        //document.getElementById("debug").asInstanceOf[org.scalajs.dom.html.Div].textContent = (time % 60).toString
+          //document.getElementById("debug").asInstanceOf[org.scalajs.dom.html.Div].textContent = (time % 60).toString
+        } finally {
+          playArea.unpauseAnimations()
+        }
       }
     }
   }
