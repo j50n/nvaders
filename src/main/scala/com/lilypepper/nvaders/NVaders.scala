@@ -7,7 +7,7 @@ import org.scalajs.dom._
 
 import scala.scalajs.js.JSApp
 import scalatags.JsDom.TypedTag
-import SvgDefinitions.{LargeInvId, MediumInvId, ScreenId, SmallInvId}
+import SvgDefinitions.{LargeInvId, MediumInvId, ScreenId, SmallInvId, CannonId}
 
 import scala.annotation.tailrec
 
@@ -21,17 +21,15 @@ object NVaders extends JSApp {
   val InvXSpacing = 16
   val InvYSpacing = 12
 
+  val InvXStep = 2
+
   case class Point(x: Int, y: Int)
 
   case class Size(w: Int, h: Int)
 
   case class Invader(var location: Point, dimensions: Size, animationSeq: AnimationSeq) {
 
-    import NVaders.bundle.implicits._
-    import NVaders.bundle.svgAttrs._
     import NVaders.bundle.svgTags._
-    import NVaders.bundle.tags._
-
 
     val id: String = UUID.randomUUID().toString
 
@@ -44,6 +42,25 @@ object NVaders extends JSApp {
 
     document.getElementById(ScreenId).appendChild(element)
   }
+
+  case class Cannon(var location: Point) {
+
+    import NVaders.bundle.svgTags._
+
+    val dimensions: Size = Size(13, 8)
+
+    val id: String = UUID.randomUUID().toString
+
+    def update(): Unit = {
+      element.setAttribute("transform", s"translate(${location.x},${location.y})")
+    }
+
+    val element: org.scalajs.dom.svg.Use = use().render
+    element.setAttribute("href", s"#${CannonId}")
+
+    document.getElementById(ScreenId).appendChild(element)
+  }
+
 
   case class AnimationSeq(refs: Seq[String]) {
     require(refs.nonEmpty, "Can't create an animation sequence with 0 elements.")
@@ -59,32 +76,16 @@ object NVaders extends JSApp {
   }
 
   def main(): Unit = {
-    import bundle.implicits._
-    import bundle.svgAttrs._
-    import bundle.svgTags._
-    import bundle.tags._
+    //    import bundle.implicits._
+    //    import bundle.svgAttrs._
+    //    import bundle.svgTags._
+    //    import bundle.tags._
 
     document.body.appendChild(SvgDefinitions.definitions.render)
     document.body.appendChild(doSvg().render)
 
-    //    for {
-    //      i <- 0 until 12
-    //      j <- 0 until 5
-    //    } {
-    //      if (j == 0) {
-    //        document.getElementById(ScreenId).appendChild(
-    //          use(xLinkHref := s"#${SmallInvId(1)}", transform := s"translate(${i * 16}, ${j * 12})").render
-    //        )
-    //      } else if (j == 1 || j == 2) {
-    //        document.getElementById(ScreenId).appendChild(
-    //          use(xLinkHref := s"#${MediumInvId(0)}", transform := s"translate(${i * 16}, ${j * 12})").render
-    //        )
-    //      } else {
-    //        document.getElementById(ScreenId).appendChild(
-    //          use(xLinkHref := s"#${LargeInvId(0)}", transform := s"translate(${i * 16}, ${j * 12})").render
-    //        )
-    //      }
-    //    }
+    val cannon = Cannon(Point(20, 200))
+    cannon.update()
 
     var invaders: Map[String, Invader] = Map()
 
@@ -95,7 +96,7 @@ object NVaders extends JSApp {
     var advancer: Option[Advancer] = None
 
     case class CreateInvaders(yPos: Int) extends Advancer {
-      private var aliens =
+      private var aliens = {
         (for (i <- 0 until 11) yield {
           Invader(Point(i * InvXSpacing + 2, yPos), Size(8, 8), AnimationSeq(SmallInvId))
         }) ++
@@ -105,6 +106,7 @@ object NVaders extends JSApp {
           (for {j <- 0 until 2; i <- 0 until 11} yield {
             Invader(Point(i * InvXSpacing, yPos + (j + 3) * InvYSpacing), Size(10, 8), AnimationSeq(LargeInvId))
           })
+      }.sortBy(n => (-n.location.y, n.location.x))
 
       override def frame(): Unit = {
         if (aliens.nonEmpty) {
@@ -144,14 +146,14 @@ object NVaders extends JSApp {
 
     case class AdvanceInvadersRight() extends Advancer with AbstractAdvanceInvaders {
       override def sorted(ns: IndexedSeq[Invader]): IndexedSeq[Invader] =
-        ns.sortBy { n => (n.location.y, -n.location.x) }
+        ns.sortBy { n => (-n.location.y, n.location.x) }
 
       override def frame(): Unit = {
         val alien = nextAlien()
 
         if (alien.nonEmpty) {
           alien.foreach { n =>
-            n.location = Point(alien.get.location.x + 1, alien.get.location.y)
+            n.location = Point(alien.get.location.x + InvXStep, alien.get.location.y)
             n.animationSeq.next
             n.update()
           }
@@ -171,14 +173,14 @@ object NVaders extends JSApp {
 
     case class AdvanceInvadersLeft() extends Advancer with AbstractAdvanceInvaders {
       override def sorted(ns: IndexedSeq[Invader]): IndexedSeq[Invader] =
-        ns.sortBy { n => (n.location.y, n.location.x) }
+        ns.sortBy { n => (-n.location.y, -n.location.x) }
 
       override def frame(): Unit = {
         val alien = nextAlien()
 
         if (alien.nonEmpty) {
           alien.foreach { n =>
-            n.location = Point(alien.get.location.x - 1, alien.get.location.y)
+            n.location = Point(alien.get.location.x - InvXStep, alien.get.location.y)
             n.animationSeq.next
             n.update()
           }
@@ -222,7 +224,9 @@ object NVaders extends JSApp {
 
     new AnimationFrame {
       override def callback(time: Long): Unit = {
+        //if (time % 2 == 0) {
         advancer.foreach(_.frame())
+        //}
 
         //document.getElementById("debug").asInstanceOf[org.scalajs.dom.html.Div].textContent = (time % 60).toString
       }
@@ -236,7 +240,7 @@ object NVaders extends JSApp {
 
     svg(id := ScreenId, width := HRez, height := VRez, viewBox := s"0 0 $HRez $VRez",
       defs(),
-      rect(x := 0, y := 0, width := HRez, height := VRez, style := "stroke:blue; stroke-width:0.5px; fill:cyan;")
+      rect(x := 0, y := 0, width := HRez, height := VRez, style := "stroke:blue; stroke-width:1px; fill:none;")
     )
   }
 }
