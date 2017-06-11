@@ -20,6 +20,7 @@ object SvgDefinitions {
   val LargeInvId = IndexedSeq(s"Blinky1-${UUID.randomUUID()}", s"Blinky2-${UUID.randomUUID()}")
   val UFOId = IndexedSeq(s"Clyde1-${UUID.randomUUID()}", s"Clyde2-${UUID.randomUUID()}")
   val CannonId = s"Cannon-${UUID.randomUUID()}"
+  val LaserId = s"Laser-${UUID.randomUUID()}"
 
   private val D = "l0,1"
   private val U = "l0,-1"
@@ -116,7 +117,9 @@ object SvgDefinitions {
         path(id := CannonId, d := Seq(
           "M0,4", "l0,4", "l13,0", "l0,-4",
           L, U, "l-4,0", U, U, L, U,
-          L, D, L, D, D, "l-4,0", D, "Z").mkString(" "), style := "stroke:none;fill:green")
+          L, D, L, D, D, "l-4,0", D, "Z").mkString(" "), style := "stroke:none;fill:green"),
+
+        path(id := LaserId, d:= "M0,0 l0,8 l1,0 l0,-8 Z")
       )
     )
 }

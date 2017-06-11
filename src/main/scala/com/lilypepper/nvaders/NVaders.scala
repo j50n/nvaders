@@ -7,7 +7,7 @@ import org.scalajs.dom._
 
 import scala.scalajs.js.JSApp
 import scalatags.JsDom.TypedTag
-import SvgDefinitions.{LargeInvId, MediumInvId, ScreenId, SmallInvId, CannonId}
+import SvgDefinitions.{CannonId, LargeInvId, MediumInvId, ScreenId, SmallInvId,LaserId}
 
 import scala.annotation.tailrec
 
@@ -23,44 +23,60 @@ object NVaders extends JSApp {
 
   val InvXStep = 2
 
+  val ArrowLeft = 37
+  val ArrowRight = 39
+  val Space = 32
+
   case class Point(x: Int, y: Int)
 
   case class Size(w: Int, h: Int)
 
-  case class Invader(var location: Point, dimensions: Size, animationSeq: AnimationSeq) {
+  trait Widget {
+    import scalatags.JsDom.svgTags.use
+    import scalatags.JsDom.svgAttrs.{id => idAttr}
+    import scalatags.JsDom.implicits._
 
-    import NVaders.bundle.svgTags._
+    var location: Point
+    val animationSeq: AnimationSeq
+
+    def layerId: String = ScreenId
 
     val id: String = UUID.randomUUID().toString
 
-    def update(): Unit = {
+    val element: org.scalajs.dom.svg.Use = use(idAttr := id).render
+    document.getElementById(layerId).appendChild(element)
+
+    def updateView(): Unit = {
       element.setAttribute("href", s"#${animationSeq.value}")
       element.setAttribute("transform", s"translate(${location.x},${location.y})")
     }
 
-    val element: org.scalajs.dom.svg.Use = use().render
-
-    document.getElementById(ScreenId).appendChild(element)
-  }
-
-  case class Cannon(var location: Point) {
-
-    import NVaders.bundle.svgTags._
-
-    val dimensions: Size = Size(13, 8)
-
-    val id: String = UUID.randomUUID().toString
-
-    def update(): Unit = {
-      element.setAttribute("transform", s"translate(${location.x},${location.y})")
+    def destroy(): Unit = {
+      if(element.parentNode != null) {
+        element.parentNode.removeChild(element)
+      }
     }
 
-    val element: org.scalajs.dom.svg.Use = use().render
-    element.setAttribute("href", s"#$CannonId")
-
-    document.getElementById(ScreenId).appendChild(element)
+    override def finalize(): Unit = {
+      try{
+        destroy()
+      } finally {
+        super.finalize()
+      }
+    }
   }
 
+  case class Invader(var location: Point, dimensions: Size, animationSeq: AnimationSeq) extends Widget
+
+  case class Cannon(var location: Point) extends Widget {
+    val animationSeq = AnimationSeq(Seq(CannonId))
+    val dimensions: Size = Size(13, 8)
+  }
+
+  case class Laser(var location: Point) extends Widget {
+    val animationSeq = AnimationSeq(Seq(LaserId))
+    val dimensions: Size = Size(1, 8)
+  }
 
   case class AnimationSeq(refs: Seq[String]) {
     require(refs.nonEmpty, "Can't create an animation sequence with 0 elements.")
@@ -76,18 +92,75 @@ object NVaders extends JSApp {
   }
 
   def main(): Unit = {
-    //    import bundle.implicits._
-    //    import bundle.svgAttrs._
-    //    import bundle.svgTags._
-    //    import bundle.tags._
-
     document.body.appendChild(SvgDefinitions.definitions.render)
 
     val playArea = doSvg().render
     document.body.appendChild(playArea)
 
     val cannon = Cannon(Point(20, 200))
-    cannon.update()
+    cannon.updateView()
+
+    var arrowLeftToggle = false
+    var arrowRightToggle = false
+
+    def stop(e: KeyboardEvent): Boolean = {
+      e.preventDefault()
+      e.stopPropagation()
+      false
+    }
+
+    document.onkeyup = (e:KeyboardEvent) => {
+//      console.info(s"UP ${e.charCode} ${e.key} ${e.keyCode}")
+      e.keyCode match {
+        case ArrowLeft => arrowLeftToggle = false; stop(e)
+        case ArrowRight => arrowRightToggle = false; stop(e)
+        case Space => stop(e)
+        case _ =>
+      }
+    }
+
+    document.onkeydown = (e:KeyboardEvent) => {
+//      console.info(s"DOWN ${e.charCode} ${e.key} ${e.keyCode}")
+      e.keyCode match {
+        case ArrowLeft => arrowLeftToggle = true; stop(e)
+        case ArrowRight => arrowRightToggle = true; stop(e)
+        case Space => stop(e)
+        case _ =>
+      }
+
+
+    }
+
+    document.onkeypress = (e:KeyboardEvent) => {
+      e.keyCode match {
+        case ArrowLeft =>  stop(e)
+        case ArrowRight => stop(e)
+        case Space => stop(e)
+        case _ =>
+      }
+    }
+
+    def resizePlayArea(): Unit ={
+      val playArea = document.getElementById(ScreenId).asInstanceOf[org.scalajs.dom.svg.SVG]
+      val w = window.innerWidth
+      val h = window.innerHeight
+
+      val playW = 1.0 * h * HRez / VRez
+
+      playArea.style.position = "absolute"
+      playArea.style.top = s"${0}px"
+      playArea.style.left = s"${w / 2 - playW / 2}px"
+
+      playArea.setAttribute("height", s"${h}px")
+      playArea.setAttribute("width", s"${playW}px")
+    }
+
+    resizePlayArea()
+
+    window.onresize = (e: UIEvent) => {
+      console.info(s"${window.innerWidth},${window.innerHeight}")
+      resizePlayArea()
+    }
 
     var invaders: Map[String, Invader] = Map()
 
@@ -114,7 +187,7 @@ object NVaders extends JSApp {
         if (aliens.nonEmpty) {
           val alien = aliens.head
           invaders += alien.id -> alien
-          alien.update()
+          alien.updateView()
 
           aliens = aliens.tail
         } else {
@@ -157,7 +230,7 @@ object NVaders extends JSApp {
           alien.foreach { n =>
             n.location = Point(alien.get.location.x + InvXStep, alien.get.location.y)
             n.animationSeq.next
-            n.update()
+            n.updateView()
           }
         }
 
@@ -184,7 +257,7 @@ object NVaders extends JSApp {
           alien.foreach { n =>
             n.location = Point(alien.get.location.x - InvXStep, alien.get.location.y)
             n.animationSeq.next
-            n.update()
+            n.updateView()
           }
         }
 
@@ -212,7 +285,7 @@ object NVaders extends JSApp {
           alien.foreach { n =>
             n.location = Point(alien.get.location.x, alien.get.location.y + InvYSpacing)
             n.animationSeq.next
-            n.update()
+            n.updateView()
           }
         }
 
@@ -232,6 +305,19 @@ object NVaders extends JSApp {
           advancer.foreach(_.frame())
           //}
 
+          if((arrowLeftToggle && arrowRightToggle) || !(arrowLeftToggle || arrowRightToggle)){
+            //No movement.
+          } else if (arrowLeftToggle){
+            if(cannon.location.x > 0){
+              cannon.location = cannon.location.copy(x = cannon.location.x - 1)
+              cannon.updateView()
+            }
+          } else {
+            if(cannon.location.x < HRez - cannon.dimensions.w - 1){
+              cannon.location = cannon.location.copy(x = cannon.location.x + 1)
+              cannon.updateView()
+            }
+          }
           //document.getElementById("debug").asInstanceOf[org.scalajs.dom.html.Div].textContent = (time % 60).toString
         } finally {
           playArea.unpauseAnimations()
