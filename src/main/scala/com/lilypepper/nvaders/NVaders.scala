@@ -7,7 +7,7 @@ import org.scalajs.dom._
 
 import scala.scalajs.js.JSApp
 import scalatags.JsDom.TypedTag
-import SvgDefinitions.{CannonId, LargeInvId, MediumInvId, ScreenId, SmallInvId,LaserId}
+import SvgDefinitions.{CannonId, LargeInvId, MediumInvId, ScreenId, SmallInvId, LaserId}
 
 import scala.annotation.tailrec
 
@@ -32,6 +32,7 @@ object NVaders extends JSApp {
   case class Size(w: Int, h: Int)
 
   trait Widget {
+
     import scalatags.JsDom.svgTags.use
     import scalatags.JsDom.svgAttrs.{id => idAttr}
     import scalatags.JsDom.implicits._
@@ -52,13 +53,13 @@ object NVaders extends JSApp {
     }
 
     def destroy(): Unit = {
-      if(element.parentNode != null) {
+      if (element.parentNode != null) {
         element.parentNode.removeChild(element)
       }
     }
 
     override def finalize(): Unit = {
-      try{
+      try {
         destroy()
       } finally {
         super.finalize()
@@ -97,11 +98,12 @@ object NVaders extends JSApp {
     val playArea = doSvg().render
     document.body.appendChild(playArea)
 
-    val cannon = Cannon(Point(20, 200))
+    val cannon = Cannon(Point(0, VRez - 32))
     cannon.updateView()
 
     var arrowLeftToggle = false
     var arrowRightToggle = false
+    var spaceToggle = false
 
     def stop(e: KeyboardEvent): Boolean = {
       e.preventDefault()
@@ -109,50 +111,50 @@ object NVaders extends JSApp {
       false
     }
 
-    document.onkeyup = (e:KeyboardEvent) => {
-//      console.info(s"UP ${e.charCode} ${e.key} ${e.keyCode}")
+    document.onkeyup = (e: KeyboardEvent) => {
+      //      console.info(s"UP ${e.charCode} ${e.key} ${e.keyCode}")
       e.keyCode match {
         case ArrowLeft => arrowLeftToggle = false; stop(e)
         case ArrowRight => arrowRightToggle = false; stop(e)
-        case Space => stop(e)
+        case Space => spaceToggle = false; stop(e)
         case _ =>
       }
     }
 
-    document.onkeydown = (e:KeyboardEvent) => {
-//      console.info(s"DOWN ${e.charCode} ${e.key} ${e.keyCode}")
+    document.onkeydown = (e: KeyboardEvent) => {
+      //      console.info(s"DOWN ${e.charCode} ${e.key} ${e.keyCode}")
       e.keyCode match {
         case ArrowLeft => arrowLeftToggle = true; stop(e)
         case ArrowRight => arrowRightToggle = true; stop(e)
-        case Space => stop(e)
+        case Space => spaceToggle = true; stop(e)
         case _ =>
       }
-
-
     }
 
-    document.onkeypress = (e:KeyboardEvent) => {
+    document.onkeypress = (e: KeyboardEvent) => {
       e.keyCode match {
-        case ArrowLeft =>  stop(e)
+        case ArrowLeft => stop(e)
         case ArrowRight => stop(e)
         case Space => stop(e)
         case _ =>
       }
     }
 
-    def resizePlayArea(): Unit ={
+    def resizePlayArea(): Unit = {
       val playArea = document.getElementById(ScreenId).asInstanceOf[org.scalajs.dom.svg.SVG]
       val w = window.innerWidth
       val h = window.innerHeight
+
+      val scale = 0.8
 
       val playW = 1.0 * h * HRez / VRez
 
       playArea.style.position = "absolute"
       playArea.style.top = s"${0}px"
-      playArea.style.left = s"${w / 2 - playW / 2}px"
+      playArea.style.left = s"${w / 2 - scale * playW / 2}px"
 
-      playArea.setAttribute("height", s"${h}px")
-      playArea.setAttribute("width", s"${playW}px")
+      playArea.setAttribute("height", s"${scale * h}px")
+      playArea.setAttribute("width", s"${scale * playW}px")
     }
 
     resizePlayArea()
@@ -169,6 +171,22 @@ object NVaders extends JSApp {
     }
 
     var advancer: Option[Advancer] = None
+
+    var laserAdvancer: Option[LaserAdvancer] = None
+
+    case class LaserAdvancer(location: Point) extends Advancer {
+      val laser = Laser(location)
+
+      override def frame(): Unit = {
+        if (laser.location.y < -laser.dimensions.h) {
+          laser.destroy()
+          laserAdvancer = None
+        } else {
+          laser.location = laser.location.copy(y = laser.location.y - 3)
+          laser.updateView()
+        }
+      }
+    }
 
     case class CreateInvaders(yPos: Int) extends Advancer {
       private var aliens = {
@@ -264,7 +282,6 @@ object NVaders extends JSApp {
         if (aliens.isEmpty) {
           val min = invaders.values.map(_.location.x).min
 
-
           if (min <= 0 + 3) {
             advancer = Some(AdvanceInvadersDown(AdvanceInvadersRight()))
           } else {
@@ -301,24 +318,49 @@ object NVaders extends JSApp {
       override def callback(time: Long): Unit = {
         playArea.pauseAnimations()
         try {
-          //if (time % 2 == 0) {
           advancer.foreach(_.frame())
-          //}
 
-          if((arrowLeftToggle && arrowRightToggle) || !(arrowLeftToggle || arrowRightToggle)){
+          if ((arrowLeftToggle && arrowRightToggle) || !(arrowLeftToggle || arrowRightToggle)) {
             //No movement.
-          } else if (arrowLeftToggle){
-            if(cannon.location.x > 0){
+          } else if (arrowLeftToggle) {
+            if (cannon.location.x > 0) {
               cannon.location = cannon.location.copy(x = cannon.location.x - 1)
               cannon.updateView()
             }
           } else {
-            if(cannon.location.x < HRez - cannon.dimensions.w - 1){
+            if (cannon.location.x < HRez - cannon.dimensions.w) {
               cannon.location = cannon.location.copy(x = cannon.location.x + 1)
               cannon.updateView()
             }
           }
-          //document.getElementById("debug").asInstanceOf[org.scalajs.dom.html.Div].textContent = (time % 60).toString
+
+          if (spaceToggle && laserAdvancer.isEmpty) {
+            laserAdvancer = Some(LaserAdvancer(cannon.location.copy(x = cannon.location.x + cannon.dimensions.w / 2)))
+          }
+          laserAdvancer.foreach{la =>
+            la.frame()
+
+            val laserLoc = la.laser.location
+
+            val hits = invaders.values.filter{n =>
+              lazy val top = n.location.y
+              lazy val bottom = top + n.dimensions.h
+              lazy val left = n.location.x
+              lazy val right = left + n.dimensions.w
+
+              laserLoc.y >= top && laserLoc.y <= bottom && laserLoc.x >= left && laserLoc.x <= right
+            }
+
+            if(hits.nonEmpty){
+              la.laser.destroy()
+              laserAdvancer = None
+            }
+
+            hits.foreach{n =>
+              n.destroy()
+              invaders -= n.id
+            }
+          }
         } finally {
           playArea.unpauseAnimations()
         }
@@ -332,6 +374,7 @@ object NVaders extends JSApp {
     import bundle.svgTags._
 
     svg(id := ScreenId, width := HRez, height := VRez, viewBox := s"0 0 $HRez $VRez",
+      `class` := "playarea",
       defs(),
       rect(x := 0, y := 0, width := HRez, height := VRez, style := "stroke:blue; stroke-width:1px; fill:none;")
     )

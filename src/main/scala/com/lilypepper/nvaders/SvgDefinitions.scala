@@ -56,27 +56,27 @@ object SvgDefinitions {
 
         g(id := MediumInvId(0),
           `class` := "invader",
-          path(d:= Seq(
+          path(d := Seq(
             "M0,4", R, U, R, U, R, U, L, U, R, D, R, D, "l3,0",
             U, R, U, R, D, L, D, R, D, R, D, R,
             "l0,3", L, U, U, L, D, D,
-            L,D,L,L,U,R,R,U,"l-5,0",
-            D,R,R,D,L,L,U,L,
-            U,U,L,D,D,L, "Z",
+            L, D, L, L, U, R, R, U, "l-5,0",
+            D, R, R, D, L, L, U, L,
+            U, U, L, D, D, L, "Z",
             "M3,3", R, D, L, "Z",
             "M7,3", R, D, L, "Z").mkString(" "))
         ),
 
         g(id := MediumInvId(1),
           `class` := "invader",
-          path(d:= Seq(
+          path(d := Seq(
             "M0,1",
-            R,D,D,R,
+            R, D, D, R,
             U, R, U, L, U, R, D, R, D, "l3,0",
-            U, R, U, R, D, L, D, R, D, R, U,U,R,
-            "l0,4",L,D,L,D,R,D,
-            L,U,L,U,"l-5,0",D,L,D,L,U,R,U,L,
-            U,L,
+            U, R, U, R, D, L, D, R, D, R, U, U, R,
+            "l0,4", L, D, L, D, R, D,
+            L, U, L, U, "l-5,0", D, L, D, L, U, R, U, L,
+            U, L,
             "Z",
             "M3,3", R, D, L, "Z",
             "M7,3", R, D, L, "Z").mkString(" "))
@@ -84,29 +84,29 @@ object SvgDefinitions {
 
         g(id := LargeInvId(0),
           `class` := "invader",
-          path(d:= Seq(
-            "M3,3", R,R,D,L,L,"Z",
-            "M7,3", R,R,D,L,L,"Z",
-            "M5,5", R,R,D,L,L, "Z",
+          path(d := Seq(
+            "M3,3", R, R, D, L, L, "Z",
+            "M7,3", R, R, D, L, L, "Z",
+            "M5,5", R, R, D, L, L, "Z",
             "M0,2",
-            R,U,"l3,0",U,"l4,0",D,"l3,0",D,R,"l0,3",
-            L,L,D,R,D,L,D,L,L,U,R,U,L,L,D,L,L,
-            U,L,L,D,R,D,L,L,U,L,U,R,U, L,L,
+            R, U, "l3,0", U, "l4,0", D, "l3,0", D, R, "l0,3",
+            L, L, D, R, D, L, D, L, L, U, R, U, L, L, D, L, L,
+            U, L, L, D, R, D, L, L, U, L, U, R, U, L, L,
             "Z"
-            ).mkString(" "))
+          ).mkString(" "))
         ),
 
         g(id := LargeInvId(1),
           `class` := "invader",
-          path(d:= Seq(
-            "M3,3", R,R,D,L,L,"Z",
-            "M7,3", R,R,D,L,L,"Z",
-            "M5,5", R,R,D,L,L, "Z",
+          path(d := Seq(
+            "M3,3", R, R, D, L, L, "Z",
+            "M7,3", R, R, D, L, L, "Z",
+            "M5,5", R, R, D, L, L, "Z",
             "M0,2",
-            R,U,"l3,0",U,"l4,0",D,"l3,0",D,R,"l0,3",
-            "l-3,0",D,R,D,R,R,D,L,L,U,L,L,U,
-            L,D,L,L,U,L,D,L,L,D,L,L,
-            U,R,R,U,R,U,"l-3,0",
+            R, U, "l3,0", U, "l4,0", D, "l3,0", D, R, "l0,3",
+            "l-3,0", D, R, D, R, R, D, L, L, U, L, L, U,
+            L, D, L, L, U, L, D, L, L, D, L, L,
+            U, R, R, U, R, U, "l-3,0",
             "Z"
           ).mkString(" "))
         ),
@@ -119,7 +119,9 @@ object SvgDefinitions {
           L, U, "l-4,0", U, U, L, U,
           L, D, L, D, D, "l-4,0", D, "Z").mkString(" "), style := "stroke:none;fill:green"),
 
-        path(id := LaserId, d:= "M0,0 l0,8 l1,0 l0,-8 Z")
+        g(id := LaserId, `class` := "laser",
+          path(d := "M0,0 l0,8 l1,0 l0,-8 Z")
+        )
       )
     )
 }

@@ -1,23 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>NVaders</title>
-        <style>
-            body {
-                background-color: black;
-                overflow: hidden;
-            }
+<head>
+    <meta charset="UTF-8">
+    <title>NVaders</title>
+    <style>
+        * {
+            cursor: none;
+        }
 
-            g.invader {
-                stroke:none;
-                fill:white;
-                stroke-width:0.2px;
-                fill-rule:evenodd;
-            }
-        </style>
-    </head>
-    <body>
-        <script type="text/javascript" src="./target/scala-2.12/nvaders-fastopt.js"></script>
-    </body>
+        body {
+            perspective: 800px;
+            background-color: black;
+            overflow: hidden;
+        }
+
+        svg.playarea {
+            transform: rotate3d(1, 0, 0, 30deg);
+        }
+
+        g.invader {
+            stroke: none;
+            fill: white;
+            stroke-width: 0.2px;
+            fill-rule: evenodd;
+        }
+
+        g.laser {
+            stroke: yellow;
+            fill: red;
+            stroke-width: 0.2px;
+            fill-rule: evenodd;
+        }
+    </style>
+</head>
+<body>
+<script type="text/javascript" src="./target/scala-2.12/nvaders-fastopt.js"></script>
+</body>
 </html>
