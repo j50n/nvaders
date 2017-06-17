@@ -21,6 +21,7 @@ object SvgDefinitions {
   val UFOId = IndexedSeq(s"Clyde1-${UUID.randomUUID()}", s"Clyde2-${UUID.randomUUID()}")
   val CannonId = s"Cannon-${UUID.randomUUID()}"
   val LaserId = s"Laser-${UUID.randomUUID()}"
+  val BarrierId = s"Barrier=${UUID.randomUUID()}"
 
   private val D = "l0,1"
   private val U = "l0,-1"
@@ -121,7 +122,9 @@ object SvgDefinitions {
 
         g(id := LaserId, `class` := "laser",
           path(d := "M0,0 l0,8 l1,0 l0,-8 Z")
-        )
+        ),
+
+        rect(id:=BarrierId, `class`:="barrier-pixel", x := 0, y := 0, width := 1, height := 1)
       )
     )
 }

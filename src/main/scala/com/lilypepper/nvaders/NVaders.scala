@@ -18,6 +18,8 @@ object NVaders extends JSApp {
   val HRez = 240
   val VRez = 336
 
+  val Scale = 1.0
+
   val InvXSpacing = 16
   val InvYSpacing = 12
 
@@ -38,6 +40,7 @@ object NVaders extends JSApp {
     import scalatags.JsDom.implicits._
 
     var location: Point
+    val dimensions: Size
     val animationSeq: AnimationSeq
 
     def layerId: String = ScreenId
@@ -145,16 +148,14 @@ object NVaders extends JSApp {
       val w = window.innerWidth
       val h = window.innerHeight
 
-      val scale = 0.8
-
       val playW = 1.0 * h * HRez / VRez
 
       playArea.style.position = "absolute"
       playArea.style.top = s"${0}px"
-      playArea.style.left = s"${w / 2 - scale * playW / 2}px"
+      playArea.style.left = s"${w / 2 - Scale * playW / 2}px"
 
-      playArea.setAttribute("height", s"${scale * h}px")
-      playArea.setAttribute("width", s"${scale * playW}px")
+      playArea.setAttribute("height", s"${Scale * h}px")
+      playArea.setAttribute("width", s"${Scale * playW}px")
     }
 
     resizePlayArea()
@@ -187,6 +188,8 @@ object NVaders extends JSApp {
         }
       }
     }
+
+    Barrier.drawBarriers(275)
 
     case class CreateInvaders(yPos: Int) extends Advancer {
       private var aliens = {
