@@ -1,15 +1,13 @@
 package com.lilypepper.nvaders
 
-import java.time.LocalTime
 import java.util.UUID
 
+import com.lilypepper.nvaders.SvgDefs._
 import org.scalajs.dom._
 
+import scala.annotation.tailrec
 import scala.scalajs.js.JSApp
 import scalatags.JsDom.TypedTag
-import SvgDefinitions.{CannonId, LargeInvId, MediumInvId, ScreenId, SmallInvId, LaserId}
-
-import scala.annotation.tailrec
 
 
 object NVaders extends JSApp {
@@ -29,15 +27,17 @@ object NVaders extends JSApp {
   val ArrowRight = 39
   val Space = 32
 
+  val ScreenId: Id = s"SCREEN-${UUID.randomUUID()}"
+
   case class Point(x: Int, y: Int)
 
   case class Size(w: Int, h: Int)
 
   trait Widget {
 
-    import scalatags.JsDom.svgTags.use
-    import scalatags.JsDom.svgAttrs.{id => idAttr}
     import scalatags.JsDom.implicits._
+    import scalatags.JsDom.svgAttrs.{id => idAttr}
+    import scalatags.JsDom.svgTags.use
 
     var location: Point
     val dimensions: Size
@@ -96,7 +96,7 @@ object NVaders extends JSApp {
   }
 
   def main(): Unit = {
-    document.body.appendChild(SvgDefinitions.definitions.render)
+    //document.body.appendChild(SvgDefinitions.definitions.render)
 
     val playArea = doSvg().render
     document.body.appendChild(playArea)
@@ -160,7 +160,7 @@ object NVaders extends JSApp {
 
     resizePlayArea()
 
-    window.onresize = (e: UIEvent) => {
+    window.onresize = (_: UIEvent) => {
       console.info(s"${window.innerWidth},${window.innerHeight}")
       resizePlayArea()
     }

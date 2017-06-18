@@ -1,7 +1,7 @@
 package com.lilypepper.nvaders
 
 import com.lilypepper.nvaders.NVaders._
-import SvgDefinitions._
+import SvgDefs._
 
 object Barrier {
   val BarrierAnimationSeq = AnimationSeq(Seq(BarrierId))
