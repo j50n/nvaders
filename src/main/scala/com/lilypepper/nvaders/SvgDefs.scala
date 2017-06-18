@@ -7,6 +7,15 @@ import org.scalajs.dom.svg.{G, RectElement}
 
 /**
   * Global SVG `defs` for all the animation cells in the game.
+  *
+  * SVG `defs` are accessed exclusively by their Id, by
+  * referencing them in `use` elements. You never manipulate the
+  * definition directly from the DOM.
+  *
+  * The SVG definitions element is automatically inserted
+  * into the document body on initialization.
+  *
+  * @author Jason Smith
   */
 object SvgDefs {
   private val bundle = scalatags.JsDom
@@ -15,8 +24,7 @@ object SvgDefs {
   import bundle.svgAttrs._
   import bundle.{TypedTag, svgTags => svg}
 
-  type Id = String
-  type CellId = Id
+  type CellId = String
 
   val SmallInvId: IndexedSeq[CellId] = IndexedSeq(s"Inky1-${UUID.randomUUID()}", s"Inky2-${UUID.randomUUID()}")
   val MediumInvId: IndexedSeq[CellId] = IndexedSeq(s"Pinky1-${UUID.randomUUID()}", s"Pinky2-${UUID.randomUUID()}")
