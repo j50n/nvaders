@@ -3,7 +3,7 @@ package com.lilypepper.nvaders
 import java.util.UUID
 
 import org.scalajs.dom.document
-import org.scalajs.dom.svg.{G, RectElement}
+import org.scalajs.dom.svg.{G, Path, RectElement}
 
 /**
   * Global SVG `defs` for all the animation cells in the game.
@@ -13,7 +13,8 @@ import org.scalajs.dom.svg.{G, RectElement}
   * definition directly from the DOM.
   *
   * The SVG definitions element is automatically inserted
-  * into the document body on initialization.
+  * into the document body on initialization and are not
+  * recreated at any point.
   *
   * @author Jason Smith
   */
@@ -29,6 +30,9 @@ object SvgDefs {
   val SmallInvId: IndexedSeq[CellId] = IndexedSeq(s"Inky1-${UUID.randomUUID()}", s"Inky2-${UUID.randomUUID()}")
   val MediumInvId: IndexedSeq[CellId] = IndexedSeq(s"Pinky1-${UUID.randomUUID()}", s"Pinky2-${UUID.randomUUID()}")
   val LargeInvId: IndexedSeq[CellId] = IndexedSeq(s"Blinky1-${UUID.randomUUID()}", s"Blinky2-${UUID.randomUUID()}")
+
+  val Bomb1Id: IndexedSeq[CellId] = for(i <- 1 to 5) yield s"Bomb$i-${UUID.randomUUID()}"
+
   val UFOId: IndexedSeq[CellId] = IndexedSeq(s"Clyde1-${UUID.randomUUID()}", s"Clyde2-${UUID.randomUUID()}")
   val CannonId: CellId = s"Cannon-${UUID.randomUUID()}"
   val LaserId: CellId = s"Laser-${UUID.randomUUID()}"
@@ -39,6 +43,10 @@ object SvgDefs {
   private val R = "l1,0"
   private val L = "l-1,0"
 
+  private def pix(xp: Int, yp: Int) : svg.ConcreteHtmlTag[Path] =
+    //svg.rect(x := xp, y:= yp, width:= 1, height:= 1)
+  svg.path(d:=s"M$xp,$yp l1,0 l0,1 l-1,0 Z")
+
   private val definitions: TypedTag[org.scalajs.dom.svg.SVG] =
     svg.svg(style := "display:none",
       svg.defs(
@@ -47,8 +55,9 @@ object SvgDefs {
             svg.ellipse(id := UFOId(0), cx := 8, cy := 4, rx := 8, ry := 4, style := "stroke:red;fill:green;"),
             svg.ellipse(id := UFOId(1), cx := 8, cy := 4, rx := 8, ry := 4, style := "stroke:red;fill:blue;")
           ) ++
-          smallInvader ++ mediumInvader ++ largeInvader
-          :+ cannon :+ laser
+          smallInvader ++ mediumInvader ++ largeInvader ++
+          bomb1 :+
+          cannon :+ laser
           :+ barrierPixel: _*
       )
     )
@@ -152,6 +161,69 @@ object SvgDefs {
           U, R, R, U, R, U, "l-3,0",
           "Z"
         ).mkString(" "))
+      )
+    )
+
+  private def bomb1: Seq[svg.ConcreteHtmlTag[G]] =
+    Seq(
+      svg.g(id := Bomb1Id(0),
+        `class` := "bomb",
+        pix(1,0),
+        pix(2,1),
+        pix(1,2),
+        pix(0,3),
+        pix(1,4),
+        pix(2,5),
+        pix(1,6),
+        pix(0,7)
+      ),
+
+      svg.g(id := Bomb1Id(1),
+        `class` := "bomb",
+        pix(2,0),
+        pix(1,1),
+        pix(0,2),
+        pix(1,3),
+        pix(2,4),
+        pix(1,5),
+        pix(0,6),
+        pix(1,7)
+      ),
+
+      svg.g(id := Bomb1Id(2),
+        `class` := "bomb",
+        pix(1,0),
+        pix(0,1),
+        pix(1,2),
+        pix(2,3),
+        pix(1,4),
+        pix(0,5),
+        pix(1,6),
+        pix(2,7)
+      ),
+
+      svg.g(id := Bomb1Id(3),
+        `class` := "bomb",
+        pix(0,0),
+        pix(1,1),
+        pix(2,2),
+        pix(1,3),
+        pix(0,4),
+        pix(1,5),
+        pix(2,6),
+        pix(1,7)
+      ),
+
+      svg.g(id := Bomb1Id(4),
+        `class` := "bomb",
+        pix(1,0),
+        pix(2,1),
+        pix(1,2),
+        pix(0,3),
+        pix(1,4),
+        pix(2,5),
+        pix(1,6),
+        pix(0,7)
       )
     )
 }

@@ -27,7 +27,7 @@ object NVaders extends JSApp {
   val ArrowRight = 39
   val Space = 32
 
-  val ScreenId: Id = s"SCREEN-${UUID.randomUUID()}"
+  val ScreenId: String = s"SCREEN-${UUID.randomUUID()}"
 
   case class Point(x: Int, y: Int)
 
@@ -80,6 +80,11 @@ object NVaders extends JSApp {
   case class Laser(var location: Point) extends Widget {
     val animationSeq = AnimationSeq(Seq(LaserId))
     val dimensions: Size = Size(1, 8)
+  }
+
+  case class Bomb1(var location: Point) extends Widget {
+    val animationSeq = AnimationSeq(Bomb1Id)
+    override val dimensions: Size = Size(3, 8)
   }
 
   case class AnimationSeq(refs: Seq[String]) {
@@ -315,12 +320,18 @@ object NVaders extends JSApp {
       }
     }
 
+    val bomb1 = Bomb1(Point(100, 100))
+
     advancer = Some(CreateInvaders(100))
 
     new AnimationFrame {
       override def callback(time: Long): Unit = {
         playArea.pauseAnimations()
         try {
+          bomb1.location = bomb1.location.copy(y = if(bomb1.location.y >= 300) 0 else bomb1.location.y + 1)
+          bomb1.animationSeq.next
+          bomb1.updateView()
+
           advancer.foreach(_.frame())
 
           if ((arrowLeftToggle && arrowRightToggle) || !(arrowLeftToggle || arrowRightToggle)) {
@@ -340,12 +351,12 @@ object NVaders extends JSApp {
           if (spaceToggle && laserAdvancer.isEmpty) {
             laserAdvancer = Some(LaserAdvancer(cannon.location.copy(x = cannon.location.x + cannon.dimensions.w / 2)))
           }
-          laserAdvancer.foreach{la =>
+          laserAdvancer.foreach { la =>
             la.frame()
 
             val laserLoc = la.laser.location
 
-            val hits = invaders.values.filter{n =>
+            val hits = invaders.values.filter { n =>
               lazy val top = n.location.y
               lazy val bottom = top + n.dimensions.h
               lazy val left = n.location.x
@@ -354,12 +365,12 @@ object NVaders extends JSApp {
               laserLoc.y >= top && laserLoc.y <= bottom && laserLoc.x >= left && laserLoc.x <= right
             }
 
-            if(hits.nonEmpty){
+            if (hits.nonEmpty) {
               la.laser.destroy()
               laserAdvancer = None
             }
 
-            hits.foreach{n =>
+            hits.foreach { n =>
               n.destroy()
               invaders -= n.id
             }
